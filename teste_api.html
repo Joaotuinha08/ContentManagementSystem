@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste da API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+        #results { margin-top: 20px; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Teste da API Feed</h1>
+    
+    <button onclick="testGet()">Testar GET</button>
+    <button onclick="testPost()">Testar POST (Imagem)</button>
+    <button onclick="testPostVideo()">Testar POST (Video)</button>
+    <button onclick="testPostAudio()">Testar POST (Audio)</button>
+    <button onclick="testDelete()">Testar DELETE</button>
+    <button onclick="clearResults()">Limpar Resultados</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function displayResult(title, data, isError = false) {
+            const className = isError ? 'error' : 'success';
+            resultsDiv.innerHTML += `<h3 class="${className}">${title}</h3><pre>${JSON.stringify(data, null, 2)}</pre><hr>`;
+        }
+        
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+        
+        async function testGet() {
+            try {
+                const response = await fetch('api/feed.php');
+                const data = await response.json();
+                displayResult('Resultado GET', data);
+            } catch (error) {
+                displayResult('Erro GET', error.message, true);
+            }
+        }
+        
+        async function testPost() {
+            try {
+                const response = await fetch('api/feed.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        titulo: 'Post Teste de Imagem',
+                        descricao: 'Este e um post de teste de imagem criado a partir da pagina HTML',
+                        id_categoria: 1,
+                        tipo: 'imagem',
+                        visibilidade: 'publico',
+                        caminho_ficheiro: 'uploads/test_image.jpg'
+                    })
+                });
+                const data = await response.json();
+                displayResult('Resultado POST (Imagem)', data, !data.success);
+            } catch (error) {
+                displayResult('Erro POST', error.message, true);
+            }
+        }
+        
+        async function testPostVideo() {
+            try {
+                const response = await fetch('api/feed.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        titulo: 'Post Teste de Video',
+                        descricao: 'Este e um post de teste de video',
+                        id_categoria: 1,
+                        tipo: 'video',
+                        visibilidade: 'publico',
+                        caminho_ficheiro: 'uploads/test_video.mp4'
+                    })
+                });
+                const data = await response.json();
+                displayResult('Resultado POST (Video)', data, !data.success);
+            } catch (error) {
+                displayResult('Erro POST (Video)', error.message, true);
+            }
+        }
+        
+        async function testPostAudio() {
+            try {
+                const response = await fetch('api/feed.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        titulo: 'Post Teste de Audio',
+                        descricao: 'Este e um post de teste de audio',
+                        id_categoria: 1,
+                        tipo: 'audio',
+                        visibilidade: 'publico',
+                        caminho_ficheiro: 'uploads/test_audio.mp3'
+                    })
+                });
+                const data = await response.json();
+                displayResult('Resultado POST (Audio)', data, !data.success);
+            } catch (error) {
+                displayResult('Erro POST (Audio)', error.message, true);
+            }
+        }
+        
+        async function testDelete() {
+            const contentId = prompt('Digite o ID do conteudo para excluir:');
+            if (!contentId) return;
+            
+            try {
+                const response = await fetch(`api/feed.php?id=${contentId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                displayResult('Resultado DELETE', data, !data.success);
+            } catch (error) {
+                displayResult('Erro DELETE', error.message, true);
+            }
+        }
+        
+        // Test invalid tipo
+        async function testInvalidTipo() {
+            try {
+                const response = await fetch('api/feed.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        titulo: 'Teste Tipo Invalido',
+                        descricao: 'Este teste deve falhar',
+                        id_categoria: 1,
+                        tipo: 'texto', // Invalid type
+                        visibilidade: 'publico'
+                    })
+                });
+                const data = await response.json();
+                displayResult('Resultado POST (Tipo Invalido)', data, true);
+            } catch (error) {
+                displayResult('Erro POST (Tipo Invalido)', error.message, true);
+            }
+        }
+        
+        // Add button for testing invalid type
+        document.addEventListener('DOMContentLoaded', function() {
+            const testButton = document.createElement('button');
+            testButton.textContent = 'Testar Tipo Invalido';
+            testButton.onclick = testInvalidTipo;
+            document.querySelector('h1').after(testButton);
+        });
+    </script>
+</body>
+</html>
